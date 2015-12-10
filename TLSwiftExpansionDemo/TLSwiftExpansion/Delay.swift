@@ -19,6 +19,25 @@ func delay(time:NSTimeInterval, task:()->()) -> Task? {
     var result: Task?
     
     let delayedClosure: Task = { cancel in
-        if let internalClosure = closure
+        if let internalClosure = closure {
+            if (cancel == false) {
+                dispatch_async(dispatch_get_main_queue(), internalClosure)
+            }
+        }
+        closure = nil
+        result = nil
     }
+    
+    result = delayedClosure
+    
+    dispatch_later {
+        if let delayedClosure = result {
+            delayedClosure(cancel: false)
+        }
+    }
+    return result
+}
+
+func cancel(task:Task?) {
+    task?(cancel: true)
 }
